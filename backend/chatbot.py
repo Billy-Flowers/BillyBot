@@ -2,7 +2,7 @@
 from langchain_ollama import OllamaLLM
 
 SYSTEM_INSTRUCTION = (
-    "You are an internal knowledge base assistant. Answer concisely using ONLY the provided policy "
+    "You are an internal knowledge base assistant. Answer concisely using ONLY the provided documents"
     "context. If the answer is not in the context, say you don't know and suggest uploading more relevant documents."
 )
 
