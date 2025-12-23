@@ -14,7 +14,7 @@ const FileUpload = () => {
   const onDrop = useCallback((acceptedFiles) => {
     const pdfFiles = acceptedFiles.filter(file => file.type === 'application/pdf');
     setUploadedFiles(prev => [...prev, ...pdfFiles]);
-    setUploadStatus(null); // Clear previous status
+    setUploadStatus(null);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -41,10 +41,10 @@ const FileUpload = () => {
         formData.append('files', file);
       });
       
-      // Add settings to the request
       formData.append('settings', JSON.stringify(settings));
 
-      const response = await uploadFiles(formData);
+      const token = localStorage.getItem("token");
+      const response = await uploadFiles(formData, token);
       setUploadStatus({ 
         type: 'success', 
         message: `${response.message} (Stored in: ${response.persist_directory})` 
@@ -72,7 +72,8 @@ const FileUpload = () => {
     setUploadStatus(null);
 
     try {
-      const response = await clearDatabase();
+      const token = localStorage.getItem("token");
+      const response = await clearDatabase(token);
       setUploadStatus({ 
         type: 'success', 
         message: response.message + (response.cleared_directories ? 
@@ -94,10 +95,10 @@ const FileUpload = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           Upload PDFs
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Drag and drop your PDF files here, or click to browse. Files will be processed and added to your knowledge base.
         </p>
       </div>
@@ -108,21 +109,21 @@ const FileUpload = () => {
         className={`
           border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
           ${isDragActive 
-            ? 'border-primary-500 bg-primary-50' 
-            : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
+            : 'border-gray-300 dark:border-gray-600 hover:border-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
           }
         `}
       >
         <input {...getInputProps()} />
-        <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+        <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
         {isDragActive ? (
           <p className="text-lg text-primary-600 font-medium">Drop the files here...</p>
         ) : (
           <>
-            <p className="text-lg text-gray-700 font-medium mb-2">
+            <p className="text-lg text-gray-700 dark:text-gray-300 font-medium mb-2">
               Drag & drop PDF files here
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               or click to select files from your computer
             </p>
           </>
@@ -132,27 +133,27 @@ const FileUpload = () => {
       {/* Uploaded Files List */}
       {uploadedFiles.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Files ready to upload ({uploadedFiles.length})
           </h4>
           <div className="space-y-2">
             {uploadedFiles.map((file, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
               >
                 <div className="flex items-center space-x-3">
-                  <FileText className="h-5 w-5 text-gray-400" />
+                  <FileText className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{file.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {(file.size / 1024).toFixed(2)} KB
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => removeFile(index)}
-                  className="text-gray-400 hover:text-red-500 transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors"
                   aria-label="Remove file"
                 >
                   <X className="h-5 w-5" />
@@ -207,26 +208,26 @@ const FileUpload = () => {
         <div
           className={`p-4 rounded-lg flex items-start space-x-3 ${
             uploadStatus.type === 'success'
-              ? 'bg-green-50 border border-green-200'
-              : 'bg-red-50 border border-red-200'
+              ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+              : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
           }`}
         >
           {uploadStatus.type === 'success' ? (
-            <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
           )}
           <div className="flex-1">
             <p
               className={`text-sm font-medium ${
-                uploadStatus.type === 'success' ? 'text-green-800' : 'text-red-800'
+                uploadStatus.type === 'success' ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
               }`}
             >
               {uploadStatus.type === 'success' ? 'Success!' : 'Error'}
             </p>
             <p
               className={`text-sm mt-1 ${
-                uploadStatus.type === 'success' ? 'text-green-700' : 'text-red-700'
+                uploadStatus.type === 'success' ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
               }`}
             >
               {uploadStatus.message}
@@ -236,8 +237,8 @@ const FileUpload = () => {
       )}
 
       {/* Info Box */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <p className="text-sm text-blue-800 dark:text-blue-200">
           <strong>Note:</strong> Uploaded files will be processed and stored in the vector database. 
           You can then ask questions about the content in the "Ask Questions" tab.
         </p>

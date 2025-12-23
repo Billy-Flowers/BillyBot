@@ -1,16 +1,18 @@
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
-# ✅ Configuration
-SECRET_KEY = "supersecretkey"  # store in .env in production
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+
 
 # ✅ Initialize password hashing
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
-
 
 # ----------------------------
 # 🔒 Password Hashing & Verify

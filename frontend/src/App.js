@@ -19,15 +19,21 @@ const PrivateRoute = ({ children }) => {
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <Header />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Router>
           <Routes>
             <Route path="/" element={<Navigate to="/login" />} />
-            <Route path="/app" element={<PrivateRoute><MainApp /></PrivateRoute>} />
+            <Route path="/app" element={
+              <>
+                <Header />
+                <PrivateRoute><MainApp /></PrivateRoute>
+              </>
+            } />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
           </Routes>
-      </Router>
+        </Router>
+      </div>
     </ThemeProvider>
   );
 }

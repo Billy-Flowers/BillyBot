@@ -1,5 +1,8 @@
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends
+from pydantic import BaseModel
 import tempfile
 import os
 import json
@@ -11,9 +14,17 @@ from chatbot import answer_question
 from pymongo import MongoClient
 from bson import ObjectId
 from auth import hash_password, verify_password, create_access_token, decode_access_token
+from dotenv import load_dotenv
+load_dotenv()
+
+client = MongoClient(os.getenv("MONGODB_URL", "mongodb://localhost:27017/"))
+db = client[os.getenv("DATABASE_NAME", "billybot")]
+users = db.users
+documents = db.documents
+
 
 # authentication for all apis pending
-
+security = HTTPBearer()
 
 app = FastAPI(title="BillyBot API", version="1.0.0")
 
@@ -30,12 +41,20 @@ app.add_middleware(
 
 # Global manager instance
 manager = None
+class UserRegister(BaseModel):
+    email: str
+    password: str
+    name: str
 
-# MongoDB setup
-client = MongoClient("mongodb://localhost:27017/")
-db = client["billybot"]
-users = db["users"]
-uploads = db["uploads"]
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    payload = decode_access_token(credentials.credentials)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return payload.get("sub")
 
 
 @app.get("/health")
@@ -46,51 +65,29 @@ async def health_check():
 
 #  Signup endpoint
 @app.post("/register")
-def register(user: dict):
-    if users.find_one({"email": user["email"]}):
+def register(user: UserRegister):
+    if users.find_one({"email": user.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
-    user["password"] = hash_password(user["password"])
-    print("Hashed password:", user["password"]) 
-    users.insert_one(user)
+    user_doc = {"email": user.email, "password": hash_password(user.password), "name": user.name}
+    users.insert_one(user_doc)
     return {"message": "User created successfully"}
+
 
 #  Login endpoint
 @app.post("/login")
-def login(user: dict):
-    db_user = users.find_one({"email": user["email"]})
-    if not db_user or not verify_password(user["password"], db_user["password"]):
+def login(user: UserLogin):
+    db_user = users.find_one({"email": user.email})
+    if not db_user or not verify_password(user.password, db_user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-
     token = create_access_token({"sub": str(db_user["_id"])})
-    return {"access_token": token}
-
-
-# Upload file (requires JWT)
-@app.post("/upload")
-async def upload_file(file: UploadFile = File(...), token: str = ""):
-    payload = decode_access_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-
-    user_id = payload.get("sub")
-    contents = await file.read()
-
-    uploads.insert_one({
-        "user_id": ObjectId(user_id),
-        "filename": file.filename,
-        "content_type": file.content_type,
-        "size": len(contents),
-    })
-
-    return {"message": "File uploaded successfully", "filename": file.filename}
-
-
+    return {"access_token": token, "token_type": "bearer"}
 
 
 @app.post("/upload")
 async def upload_files(
     files: List[UploadFile] = File(...),
-    settings: str = Form(...)
+    settings: str = Form(...),
+    user_id: str = Depends(get_current_user)
 ):
     """
     Upload and ingest PDF files into the vector database
@@ -151,7 +148,10 @@ async def upload_files(
 
 
 @app.post("/ask")
-async def ask_question_endpoint(request: dict):
+async def ask_question_endpoint(
+    request: dict,
+    user_id: str = Depends(get_current_user)
+):
     """
     Ask a question to the chatbot
     """
@@ -192,7 +192,8 @@ async def ask_question_endpoint(request: dict):
 
 
 @app.delete("/clear-database")
-async def clear_database():
+async def clear_database(user_id: str = Depends(get_current_user)):
+
     """
     Clear all vector database directories
     """

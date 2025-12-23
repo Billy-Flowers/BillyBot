@@ -8,25 +8,19 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
-
+  const [name, setName] = useState("");
+  
     const handleRegister = async (e) => {
-    e.preventDefault();
-    try {
-      const response = registerUser(email, password);
-      
-
-      if (!response.ok) {
-        const errorData = response.json();
-        throw new Error(errorData.message || 'Registration failed');
+      e.preventDefault();
+      try {
+        const response = await registerUser(email, password, name);
+        console.log('Registration successful:', response);
+        navigate("/login");
+      } catch (err) {
+        console.error('Error during registration:', err.message);
       }
-
-      const data = response.json();
-      console.log('Registration successful:', data);
-      // Handle successful registration (e.g., redirect to login)
-    } catch (err) {
-      console.error('Error during registration:', err.message);
-    }
-  };
+    };
+    
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -42,6 +36,15 @@ const Register = () => {
           className="w-full p-2 mb-4 border border-gray-300 rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <input
+          type="text"
+          placeholder="Full Name"
+          className="w-full p-2 mb-4 border border-gray-300 rounded"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           required
         />
 
@@ -62,6 +65,7 @@ const Register = () => {
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
         />
+        
 
         <button
           type="submit"

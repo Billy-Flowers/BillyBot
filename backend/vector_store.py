@@ -16,8 +16,6 @@ import shutil
 import tempfile
 import json
 
-
-
 class VectorStoreManager:
     def __init__(
         self,

@@ -28,7 +28,8 @@ const ChatInterface = () => {
     setIsLoading(true);
 
     try {
-      const response = await askQuestion(query.trim(), settings);
+      const token = localStorage.getItem("token");
+      const response = await askQuestion(query.trim(), settings, token);
       const botMessage = { type: 'bot', content: response.answer };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
@@ -51,17 +52,17 @@ const ChatInterface = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Ask a Question
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Type your question about your knowledge base (e.g., "What is the company policy on remote work?")
           </p>
         </div>
         {messages.length > 0 && (
           <button
             onClick={clearChat}
-            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
           >
             Clear chat
           </button>
@@ -69,11 +70,11 @@ const ChatInterface = () => {
       </div>
 
       {/* Chat Messages */}
-      <div className="bg-gray-50 rounded-lg p-4 h-96 overflow-y-auto">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 h-96 overflow-y-auto">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
             <div className="text-center">
-              <Bot className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <Bot className="h-12 w-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
               <p className="text-lg font-medium mb-2">Start a conversation</p>
               <p className="text-sm">Ask me anything about your knowledge base!</p>
             </div>
@@ -94,7 +95,7 @@ const ChatInterface = () => {
                     className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                       message.type === 'user'
                         ? 'bg-primary-600 text-white'
-                        : 'bg-white text-gray-600 border border-gray-200'
+                        : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600'
                     }`}
                   >
                     {message.type === 'user' ? (
@@ -108,8 +109,8 @@ const ChatInterface = () => {
                       message.type === 'user'
                         ? 'bg-primary-600 text-white'
                         : message.isError
-                        ? 'bg-red-100 text-red-800 border border-red-200'
-                        : 'bg-white text-gray-900 border border-gray-200'
+                        ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800'
+                        : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600'
                     }`}
                   >
                     <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -120,13 +121,13 @@ const ChatInterface = () => {
             {isLoading && (
               <div className="flex justify-start">
                 <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white text-gray-600 border border-gray-200 flex items-center justify-center">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 flex items-center justify-center">
                     <Bot className="h-4 w-4" />
                   </div>
-                  <div className="bg-white border border-gray-200 px-4 py-3 rounded-lg">
+                  <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-4 py-3 rounded-lg">
                     <div className="flex items-center space-x-2">
                       <Loader className="h-4 w-4 animate-spin text-primary-600" />
-                      <span className="text-sm text-gray-600">Thinking...</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-300">Thinking...</span>
                     </div>
                   </div>
                 </div>
@@ -145,7 +146,7 @@ const ChatInterface = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type your question here..."
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             disabled={isLoading}
           />
         </div>

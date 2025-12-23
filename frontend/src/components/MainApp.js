@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Header from './Header';
 import SettingsPanel from './SettingsPanel';
 import FileUpload from './FileUpload';
 import ChatInterface from './ChatInterface';
@@ -7,11 +6,10 @@ import { SettingsProvider } from '../context/SettingsContext';
 
 const MainApp = () => {
   const [activeTab, setActiveTab] = useState("upload");
+  
   return (
     <SettingsProvider>
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Settings Sidebar */}
@@ -21,16 +19,16 @@ const MainApp = () => {
             
             {/* Main Content */}
             <div className="lg:col-span-3">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                 {/* Tab Navigation */}
-                <div className="border-b border-gray-200">
+                <div className="border-b border-gray-200 dark:border-gray-700">
                   <nav className="flex space-x-8 px-6" aria-label="Tabs">
                     <button
                       onClick={() => setActiveTab('upload')}
                       className={`py-4 px-1 border-b-2 font-medium text-sm ${
                         activeTab === 'upload'
-                          ? 'border-primary-500 text-primary-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                          : 'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                     >
                       📄 Upload PDFs
@@ -39,8 +37,8 @@ const MainApp = () => {
                       onClick={() => setActiveTab('chat')}
                       className={`py-4 px-1 border-b-2 font-medium text-sm ${
                         activeTab === 'chat'
-                          ? 'border-primary-500 text-primary-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                          : 'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                     >
                       💬 Ask Questions
@@ -60,8 +58,6 @@ const MainApp = () => {
       </div>
     </SettingsProvider>
   );
-}
-
-
+};
 
 export default MainApp;

@@ -26,7 +26,16 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
+/**
+ * Set the authorization token for future requests
+ */
+export const setAuthToken = (token) => {
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common['Authorization'];
+  }
+};
 /**
  * Check API health status
  */
@@ -50,12 +59,13 @@ export const getStatus = async () => {
 /**
  * Upload PDF files with settings
  */
-export const uploadFiles = async (formData) => {
+export const uploadFiles = async (formData, token) => {
   const response = await api.post('/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
+      'Authorization': `Bearer ${token}`,
     },
-    timeout: 60000, // 60 second timeout for large files
+    timeout: 60000,
   });
   return response.data;
 };
@@ -63,27 +73,37 @@ export const uploadFiles = async (formData) => {
 /**
  * Ask a question to the chatbot
  */
-export const askQuestion = async (question, settings) => {
+export const askQuestion = async (question, settings, token) => {
   const response = await api.post('/ask', {
     question,
     settings,
+  }, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
   });
   return response.data;
 };
 
+
 /**
  * Clear the vector database
  */
-export const clearDatabase = async () => {
-  const response = await api.delete('/clear-database');
+export const clearDatabase = async (token) => {
+  const response = await api.delete('/clear-database', {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
   return response.data;
 };
+
 
 /**
  * Register a new user
  */
-export const registerUser = async (email, password) => {
-  const response = await api.post('/register', { email, password });
+export const registerUser = async (email, password, name) => {
+  const response = await api.post('/register', { email, password, name });
   return response.data;
 };
 
